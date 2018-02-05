@@ -6,43 +6,47 @@ using namespace cv;
 using namespace std;
 
 int main( int argc, char** argv ) {
-    CvCapture* capture0 = cvCreateFileCapture("./movie0.mov");
-    CvCapture* capture1 = cvCreateFileCapture("./movie1.mov");
-
-    IplImage* frame0 = NULL;
-    IplImage* frame1 = NULL;
-    Mat frameMat0;
-    Mat frameMat1;
-    Mat bigMat;
-
-    if(!capture0 || !capture1) {
-        printf("Video Not Opened\n");
-        return -1;
+    vector<CvCapture*> captures;
+    for(int i = 0; i < argc - 1; i++) {
+        captures.push_back(cvCreateFileCapture(argv[i+1]));
     }
 
-    double fps0 = cvGetCaptureProperty(capture0, CV_CAP_PROP_FPS);
-    double fps1 = cvGetCaptureProperty(capture1, CV_CAP_PROP_FPS);
-    double fps = (fps0 + fps1) /2.0;
+    vector<IplImage*> frames;
+    vector<Mat> mats;
+    Mat outMat;
+
+    double fps = 0;
+    for(int i = 0; i < argc - 1; i++) {
+        fps = fps + cvGetCaptureProperty(captures[i], CV_CAP_PROP_FPS);
+    }
+    fps = fps / (argc - 1);
 
     namedWindow("video", 1);
     while(1) {
-        frame0 = cvQueryFrame(capture0);
-        frame1 = cvQueryFrame(capture1);
-        frameMat0 = cvarrToMat(frame0);
-        frameMat1 = cvarrToMat(frame1);
-
-        if(!frame0 || !frame1) {
-            printf("Capture Finished\n");
-            break;
+        frames.clear();
+        mats.clear();
+        for(int i = 0; i < argc - 1; i++) {
+            frames.push_back(cvQueryFrame(captures[i]));
+            if(!frames[i]) {
+                printf("Capture Finished\n");
+                goto stop;
+            }
+            mats.push_back(cvarrToMat(frames[i]));
+            if(i == 1) {
+                hconcat(mats[i-1], mats[i], outMat);
+            } else if(i > 1) {
+                hconcat(outMat, mats[i], outMat);
+            }
         }
 
-        hconcat(frameMat0, frameMat1, bigMat);
-        imshow("video",bigMat);
+        imshow("video",outMat);
         cvWaitKey(1000/fps);
     }
 
-    cvReleaseCapture(&capture0);
-    cvReleaseCapture(&capture1);
+    stop:
+    for(int i = 0; i < argc - 1; i++) {
+        cvReleaseCapture(&captures[i]);
+    }
     return 0;
 }
 
