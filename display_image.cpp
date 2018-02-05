@@ -5,14 +5,16 @@
 using namespace cv;
 using namespace std;
 
-int main( int argc, char** argv )
-{
+int main( int argc, char** argv ) {
     CvCapture* capture = cvCreateFileCapture("./movie.mov");
 
     IplImage* frame = NULL;
+    IplImage* firstFrame = NULL;
+    Mat frameMat;
+    Mat firstMat;
+    Mat bigMat;
 
-    if(!capture)
-    {
+    if(!capture) {
         printf("Video Not Opened\n");
         return -1;
     }
@@ -24,19 +26,24 @@ int main( int argc, char** argv )
 
     printf("Video Size = %d x %d\n",width,height);
     printf("FPS = %f\nTotal Frames = %d\n",fps,frame_count);
+    namedWindow("video", 1);
 
-    while(1)
-    {
+    while(1) {
         frame = cvQueryFrame(capture);
+        frameMat = cvarrToMat(frame);
 
-        if(!frame)
-        {
+        if(!frame) {
             printf("Capture Finished\n");
             break;
         }
+        if(!firstFrame) {
+            firstFrame = frame;
+            firstMat = cvarrToMat(firstFrame);
+        }
 
-        cvShowImage("video",frame);
-        cvWaitKey(10);
+        hconcat(frameMat, firstMat, bigMat);
+        imshow("video",bigMat);
+        cvWaitKey(1000/fps);
     }
 
     cvReleaseCapture(&capture);
