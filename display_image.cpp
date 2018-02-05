@@ -6,49 +6,43 @@ using namespace cv;
 using namespace std;
 
 int main( int argc, char** argv ) {
-    CvCapture* capture = cvCreateFileCapture("./movie.mov");
+    CvCapture* capture0 = cvCreateFileCapture("./movie0.mov");
+    CvCapture* capture1 = cvCreateFileCapture("./movie1.mov");
 
-    IplImage* frame = NULL;
-    IplImage* firstFrame = NULL;
-    Mat frameMat;
-    Mat firstMat;
+    IplImage* frame0 = NULL;
+    IplImage* frame1 = NULL;
+    Mat frameMat0;
+    Mat frameMat1;
     Mat bigMat;
 
-    if(!capture) {
+    if(!capture0 || !capture1) {
         printf("Video Not Opened\n");
         return -1;
     }
 
-    int width = (int)cvGetCaptureProperty(capture,CV_CAP_PROP_FRAME_WIDTH);
-    int height = (int)cvGetCaptureProperty(capture,CV_CAP_PROP_FRAME_HEIGHT);
-    double fps = cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-    int frame_count = (int)cvGetCaptureProperty(capture,  CV_CAP_PROP_FRAME_COUNT);
+    double fps0 = cvGetCaptureProperty(capture0, CV_CAP_PROP_FPS);
+    double fps1 = cvGetCaptureProperty(capture1, CV_CAP_PROP_FPS);
+    double fps = (fps0 + fps1) /2.0;
 
-    printf("Video Size = %d x %d\n",width,height);
-    printf("FPS = %f\nTotal Frames = %d\n",fps,frame_count);
     namedWindow("video", 1);
-
     while(1) {
-        frame = cvQueryFrame(capture);
-        frameMat = cvarrToMat(frame);
+        frame0 = cvQueryFrame(capture0);
+        frame1 = cvQueryFrame(capture1);
+        frameMat0 = cvarrToMat(frame0);
+        frameMat1 = cvarrToMat(frame1);
 
-        if(!frame) {
+        if(!frame0 || !frame1) {
             printf("Capture Finished\n");
             break;
         }
-        if(!firstFrame) {
-            printf("Getting first frame\n");
-            firstFrame = cvCreateImage(cvGetSize(frame), frame->depth, frame->nChannels);
-            cvCopy(frame, firstFrame);
-            firstMat = cvarrToMat(firstFrame);
-        }
 
-        hconcat(frameMat, firstMat, bigMat);
+        hconcat(frameMat0, frameMat1, bigMat);
         imshow("video",bigMat);
         cvWaitKey(1000/fps);
     }
 
-    cvReleaseCapture(&capture);
+    cvReleaseCapture(&capture0);
+    cvReleaseCapture(&capture1);
     return 0;
 }
 
