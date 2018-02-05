@@ -37,7 +37,9 @@ int main( int argc, char** argv ) {
             break;
         }
         if(!firstFrame) {
-            firstFrame = frame;
+            printf("Getting first frame\n");
+            firstFrame = cvCreateImage(cvGetSize(frame), frame->depth, frame->nChannels);
+            cvCopy(frame, firstFrame);
             firstMat = cvarrToMat(firstFrame);
         }
 
