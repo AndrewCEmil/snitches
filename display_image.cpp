@@ -19,7 +19,7 @@ int main( int argc, char** argv ) {
     for(int i = 0; i < argc - 1; i++) {
         fps = fps + cvGetCaptureProperty(captures[i], CV_CAP_PROP_FPS);
     }
-    fps = fps / (argc - 1);
+    fps = fps / (argc - 1);  // Average fps
 
     namedWindow("video", 1);
     while(1) {
