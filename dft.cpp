@@ -14,14 +14,15 @@ static void help(char* progName)
         <<  "This program demonstrated the use of the discrete Fourier transform (DFT). " << endl
         <<  "The dft of an image is taken and it's power spectrum is displayed."          << endl
         <<  "Usage:"                                                                      << endl
-        << progName << " [image_name -- default ../data/lena.jpg] "               << endl << endl;
+        << progName << " [image_name] [out_name]"                                         << endl << endl;
 }
 
 int main(int argc, char ** argv)
 {
     help(argv[0]);
 
-    const char* filename = argc >=2 ? argv[1] : "../data/lena.jpg";
+    const char* filename = argv[1];
+    const char* outname = argv[2];
 
     Mat I = imread(filename, IMREAD_GRAYSCALE);
     if( I.empty())
@@ -71,8 +72,11 @@ int main(int argc, char ** argv)
     normalize(magI, magI, 0, 1, NORM_MINMAX); // Transform the matrix with float values into a
                                             // viewable image form (float between values 0 and 1).
 
+    magI.convertTo(magI, CV_8UC3, 255.0);
+    imwrite(outname, magI);
     imshow("Input Image"       , I   );    // Show the result
     imshow("spectrum magnitude", magI);
+
     waitKey();
 
     return 0;
