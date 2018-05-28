@@ -11,7 +11,7 @@ static void help(char* progName)
 {
     cout << endl
         <<  "Usage:"                                << endl
-        << progName << " [input_video] [out_name]"  << endl << endl;
+        << progName << " [input_video] [out_dir]"  << endl << endl;
 }
 
 static Mat do_dft(Mat I) {
@@ -69,7 +69,7 @@ int main( int argc, char** argv ) {
     help(argv[0]);
 
     const char* filename = argv[1];
-    const char* outname = argv[2];
+    const char* outdir = argv[2];
 
     CvCapture* capture = cvCreateFileCapture(filename);
 
@@ -82,6 +82,7 @@ int main( int argc, char** argv ) {
 
     namedWindow("video", 1);
 
+    int count = 0;
     while(1) {
         frame = cvQueryFrame(capture);
         if(!frame) {
@@ -90,8 +91,12 @@ int main( int argc, char** argv ) {
         mat = cvarrToMat(frame);
         Mat transformed = do_dft(mat);
 
+        ostringstream os;
+        os << outdir << "/" << count << "frame.jpeg";
+        imwrite(os.str(), transformed);
         imshow("video",transformed);
         cvWaitKey(1000/fps);
+        count++;
     }
 
     cvReleaseCapture(&capture);
